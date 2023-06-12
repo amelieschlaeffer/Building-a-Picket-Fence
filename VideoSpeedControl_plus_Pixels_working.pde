@@ -16,21 +16,22 @@ int zeroCount = 0;
 
 void setup(){
   
-  size(1280, 720);
+  size(1280* 2, 720 * 2);
   
   video = new Capture(this, 1280, 720);
-  
   //webcam for the shadow
   opencv = new OpenCV(this, 1280, 720);
   //webcam for Object detection
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);  
   video.start();
+  opencv.loadImage(video);
+  
   
   fencecircle = new Movie(this, "FinalVenceVideoBright1080p_24fps_.mp4");
   fencecircle.play();
   //loading the film from files
   
-   silhouette = createImage(video.width, video.height, ARGB);
+  // silhouette = createImage(video.width, video.height, ARGB);
    
    //timer to count faces every 2 secs
     Timer timer = new Timer();
@@ -46,30 +47,26 @@ void setup(){
 
 void draw() {
 
-  opencv.loadImage(video);
+  //opencv.loadImage(video);
   
-   pushMatrix();
-  translate(width, 0);
-  scale(-1, 1);
+ //  pushMatrix();
+ // translate(width, 0);
+ // scale(-1, 1);
 
-  stroke(0);
-  strokeWeight(5);
-  textSize(100);
-  
+ // stroke(0);
+ // strokeWeight(5);
+ // textSize(100);
+ // text (personCount, 100, 100);  
+ //popMatrix();
+ 
+ 
  if (detectFaces) {
-    opencv.loadImage(video);
+
     Rectangle[] faces = opencv.detect();
     personCount = faces.length;
     detectFaces = false;
  
-    if (personCount == 0) {
-      zeroCount++;
-      if (zeroCount >= 2) {
-        fencecircle.speed(-8);
-      }
-    } else {
-      zeroCount = 0; // Reset the zero count if personCount is not zero
-    }
+   rewindToStart();
     
     
   if (personCount == 1){
@@ -85,52 +82,54 @@ void draw() {
     fourP();
   }
   
-  text (personCount, 100, 100);
-  }
+
+  
+ }
+  
   
 //****************** Pixel Silhouette START ****************
 
  // Grid determining increment at which to read pixel data
-  int gridSize = 3;
+  //int gridSize = 3;
   
-  // Loading pixels
-  video.read();
-  video.loadPixels();
+  //// Loading pixels
+  //video.read();
+  //video.loadPixels();
   
-  // Looping through each pixel reading
-  for (int y = 0; y < video.height; y += gridSize) {
-    for (int x = 0; x < video.width; x += gridSize) {
-      // Formula for getting red value
-      int index = (y * video.width + x);
+  //// Looping through each pixel reading
+  //for (int y = 0; y < video.height; y += gridSize) {
+  //  for (int x = 0; x < video.width; x += gridSize) {
+  //    // Formula for getting red value
+  //    int index = (y * video.width + x);
       
-     // Assigning RGB colour variables
-      int pixelColor = video.pixels[index];
-      int r = (pixelColor >> 16) & 0xFF;
-     //int g = (pixelColor >> 8) & 0xFF;
-     //int b = pixelColor & 0xFF;
+  //   // Assigning RGB colour variables
+  //    int pixelColor = video.pixels[index];
+  //    int r = (pixelColor >> 16) & 0xFF;
+  //   //int g = (pixelColor >> 8) & 0xFF;
+  //   //int b = pixelColor & 0xFF;
       
-    // println(r);
-    //    println(g);
-   // println(b);
+  //  // println(r);
+  //  //    println(g);
+  // // println(b);
       
-      if (r <= 150) {
-    // Any value above this RGB threshold is pretty white, meaning it is the background (ceiling)
+  //    if (r <= 150) {
+  //  // Any value above this RGB threshold is pretty white, meaning it is the background (ceiling)
       
         
-        rect(x, y, 3, 3);  
-        // Drawing a black pixel at the coordinates that are not white like the ceiling, 
-        //         meaning they are objects/people that I want to display as a shadow
-        tint(255, 160);  
-        //applying transparency
-      }
-    }
-  }
+  //      rect(x, y, 3, 3);  
+  //      // Drawing a black pixel at the coordinates that are not white like the ceiling, 
+  //      //         meaning they are objects/people that I want to display as a shadow
+  //      tint(255, 160);  
+  //      //applying transparency
+  //    }
+  //  }
+  //}
 //****************** Pixel Silhouette END *************** 
 
-popMatrix();
 
 
- image(fencecircle, 0, 0, 1280, 720);
+
+ image(fencecircle, 0, 0, width ,height);
  //drawing the video
 }
 
@@ -142,6 +141,21 @@ void movieEvent(Movie m){
   m.read();
 }
 
+void rewindToStart() {
+   
+    if (personCount == 0) {
+      zeroCount++;
+      if (zeroCount >= 4) {
+        fencecircle.speed(-5);
+        // when nobody is watching the video for 6 seconds, rewind to zero
+      }
+    } else {
+      zeroCount = 0; // Reset the zero count if personCount is not zero
+    }
+}
+
+
+
 // functions for speed control
 void oneP(){ 
 float currentTime = fencecircle.time();
@@ -150,7 +164,7 @@ float currentTime = fencecircle.time();
   if (currentTime > 11 * 60 + 20) {
     fencecircle.speed(0.5); }// Slow down to half speed  
    else{
-     //fencecircle.play();
+    //fencecircle.play();
     fencecircle.speed(1.0);
     }
   
